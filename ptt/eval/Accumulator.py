@@ -1,6 +1,7 @@
 ################################################################################
 # Accumulates results in a minibatch
 ################################################################################
+
 import numpy as np
 
 class Accumulator():
@@ -18,14 +19,3 @@ class Accumulator():
 
     def get_std(self, key):
         return np.std([x for x in self.dict[key]])
-
-'''
-acc = Accumulator()
-for i in range(5):
-    acc.accumulate('A', float(i))
-assert acc.get_mean('A') == 2.0
-assert 1.41 < acc.get_std('A') < 1.415
-'''
-
-
-#%%

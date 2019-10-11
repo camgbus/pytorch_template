@@ -1,6 +1,7 @@
 ################################################################################
-# Stores results in a Pandas df
+# Stores results in a Pandas DataFrame
 ################################################################################
+
 import pandas as pd
 
 from ptt.utils.load_restore import save_df
