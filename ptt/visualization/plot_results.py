@@ -7,6 +7,10 @@ import seaborn as sns
 import os
 
 def plot_results(df, measures, save_path=None, title=None, ending='.png'):
+    """Plots a data frame as created by ptt.eval.Results
+    param title: the title that will appear on the plot
+    param ending: can be '.png' or '.svg'
+    """
     # Filter out measures that are not to be shown
     df = df.loc[df['measure_name'].isin(measures)]
     # Start a new figure so that different plots do not overlap

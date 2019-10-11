@@ -3,6 +3,7 @@ import time
 
 from utils.helper_functions import get_time_string
 from utils.load_restore import pkl_dump, save_json, save_model_state
+from ptt.visualization.plot_results import plot_results
 
 class Experiment:
 
