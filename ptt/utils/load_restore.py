@@ -25,11 +25,17 @@ def pkl_load(name, path = 'obj'):
 # PANDAS
 import pandas as pd
 def save_df(df, name, path):
+    if '.p' not in name:
+        name = name + '.pkl'
     full_path = os.path.join(path, name)
     df.to_pickle(full_path)
 
 def load_df(name, path):
+    print('ACA')
+    if '.p' not in name:
+        name = name + '.pkl'
     full_path = os.path.join(path, name)
+    print(full_path)
     return pd.read_pickle(full_path)
 
 # JSON
