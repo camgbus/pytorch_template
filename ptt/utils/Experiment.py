@@ -1,7 +1,5 @@
 import os
 import time
-import sys
-import numpy as np
 
 from utils.helper_functions import get_time_string
 from utils.load_restore import pkl_dump, save_json, save_model_state
