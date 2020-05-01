@@ -1,14 +1,15 @@
 # pytorch_template
-A template for PyTorch projects with an Inception example.
+A template for PyTorch projects with a CIFAR10 example.
 
 To install and use:
+0. (Create a Python3.7 environment, e.g. as conda create -n myenv python=3.7, and activate)
 1. Adapt your project name and setup.py file
 2. cd to the project root (where setup.py lives)
-3. Query your CUDA version with 'nvcc --version' (install if necessary) and install PyTorch through conda with the command specified by https://pytorch.org/. The tutorial was written using PyTorch 1.3.0.
+3. Install CUDA if necessary and install PyTorch through conda with the command specified by https://pytorch.org/. The tutorial was written using PyTorch 1.5.0. and CUDA10.2., so the command for Linux was 'install pytorch torchvision cudatoolkit=10.2 -c pytorch'
 4. Execute 'pip install -r requirements.txt'
-5. Execute 'pytest' to test the correct installation
+5. Execute 'pytest' to test the correct installation. Note that one of the tests tests whether at least one GPU is present.
 6. Make changes :)
 
-To run the Inception example:
+To run the CIFAR10 example:
 1. Download the HAM1000 dataset from https://www.kaggle.com/kmader/skin-cancer-mnist-ham10000/home
 2. 
