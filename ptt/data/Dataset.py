@@ -1,8 +1,10 @@
 class Dataset:
     """A dataset stores instances."""
-    def __init__(self, name, instances):
+    def __init__(self, name, classes, instances, hold_out_ixs=[]):
         self.name = name
+        self.classes = classes
         self.instances = instances
+        self.hold_out_ixs = hold_out_ixs
 
 class Instance:
     """To define a dataset for a specific problem, inherit 
@@ -12,10 +14,6 @@ class Instance:
         self.x = x
         self.y = y
 
-class ImageGeneratorInstance(Instance):
-    """ x are parameteres, and y is a path to an image """
-    def __init__(self, x, y):
-        assert isinstance(x, tuple) or isinstance(x, list)
-        assert all(isinstance(x_i, float) for x_i in x)
-        assert isinstance(y, str)
-        super().__init__(x, y)
+class PathInstance(Instance):
+    def __init__(self, x_path, y):
+        super().__init__(x=x_path, y=y)

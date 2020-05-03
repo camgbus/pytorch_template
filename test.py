@@ -1,9 +1,7 @@
 
+#%%
+lst = ['as', 'sa', 'xx']
+for ix, ex in enumerate(lst):
+    print(ix)
 
-
-
-
-import torch.optim as optim
-
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+# %%
