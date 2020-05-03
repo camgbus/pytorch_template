@@ -1,18 +1,20 @@
 ################################################################################
-# Functions to save and restore different data types
+# Functions to save and restore different data types.
 ################################################################################
 
 import os
 
 # PICKLE
 import pickle
-def pkl_dump(obj, name, path = 'obj'):
+def pkl_dump(obj, name, path='obj'):
+    """Saves an object in pickle format."""
     if '.p' not in name:
         name = name + '.pkl'
     path = os.path.join(path, name)
     pickle.dump(obj, open(path, 'wb'))
 
-def pkl_load(name, path = 'obj'):
+def pkl_load(name, path='obj'):
+    """Restores an object from a pickle file."""
     if '.p' not in name:
         name = name + '.pkl'
     path = os.path.join(path, name)
@@ -31,7 +33,6 @@ def save_df(df, name, path):
     df.to_pickle(full_path)
 
 def load_df(name, path):
-    print('ACA')
     if '.p' not in name:
         name = name + '.pkl'
     full_path = os.path.join(path, name)
@@ -40,38 +41,19 @@ def load_df(name, path):
 
 # JSON
 import json
-def save_json(dict_obj, name, path):
+def save_json(dict_obj, path, name):
+    """Saves a dictionary in json format."""
     if 'txt' not in name:
-        name += '.txt'
+        name += '.json'
     with open(os.path.join(path, name), 'w') as json_file:
         json.dump(dict_obj, json_file)
 
-def load_json(name, path):
+def load_json(path, name):
+    """Restores a dictionary from a json file."""
     if 'txt' not in name:
-        name += '.txt'
+        name += '.json'
     with open(os.path.join(path, name), 'r') as json_file:
         return json.load(json_file)
-
-# PYTORCH
-import torch
-def save_model_state(model, name, path):
-    full_path = os.path.join(path, name)
-    torch.save(model.state_dict(), full_path)
-
-def load_model_state(model, name, path):
-    full_path = os.path.join(path, name)
-    if os.path.isfile(full_path):
-        model.load_state_dict(torch.load(full_path))
-        return True
-    return False
-
-def save_optimizer_state(optimizer, name, path):
-    full_path = os.path.join(path, name)
-    torch.save(optimizer.state_dict(), full_path)
-
-def load_optimizer_state(optimizer, name, path):
-    full_path = os.path.join(path, name)
-    optimizer.load_state_dict(torch.load(full_path))
 
 # OTHERS
 import functools

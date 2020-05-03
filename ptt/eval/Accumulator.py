@@ -4,18 +4,25 @@
 
 import numpy as np
 
-class Accumulator():
-    def __init__(self, currents=['epoch']):
-        self.dict = dict()
+class Accumulator:
+    def __init__(self, keys=['loss']):
+        self.values = dict()
+        self.keys = keys
+        self.init()
 
-    def accumulate(self, key, value):
-        if key in self.dict:
-            self.dict[key].append(value)
-        else:
-            self.dict[key] = [value]
+    def add(self, key, value, count=1):
+        for _ in range(count):
+            self.values[key].append(value)
 
-    def get_mean(self, key):
-        return np.mean([x for x in self.dict[key]])
+    def mean(self, key):
+        return np.mean(self.values[key])
 
-    def get_std(self, key):
-        return np.std([x for x in self.dict[key]])
+    def std(self, key):
+        return np.std(self.values[key])
+
+    def sum(self, key):
+        return sum(self.values[key])
+
+    def init(self):
+        for key in self.keys:
+            self.values[key] = []
