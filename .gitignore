@@ -4,7 +4,7 @@ ptt/utils/telegram_bot/telegram_login.json
 
 
 # VS code project setup
-/.vscode/*
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
