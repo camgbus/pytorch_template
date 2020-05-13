@@ -2,16 +2,9 @@
 # PyTorch requires the mean and standard deviation to be calculated manually for
 # normalization. This method can be used for that.
 # ------------------------------------------------------------------------------
-
-from IPython import get_ipython
-get_ipython().magic('load_ext autoreload') 
-get_ipython().magic('autoreload 2')
-
 import torch
-from torchvision import transforms
-
-from src.data.datasets import get_dataset
-from src.data.torcherize import TorchSegmentationDataset
+from ptt.data.ClassificationDataset import CIFAR10
+from ptt.data.torcherize import ImgClassificationDataset
 
 def normalization_values(dataset):
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=10, shuffle=False)
@@ -28,4 +21,4 @@ def normalization_values(dataset):
         std = (count * std + sum_of_square) / (count + nb_pixels)
         count += nb_pixels
 
-    return mean, torch.sqrt(std - mean ** 2)
+    return {'mean': mean, 'std': torch.sqrt(std - mean ** 2)}
