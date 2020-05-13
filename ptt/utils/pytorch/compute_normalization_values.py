@@ -3,8 +3,6 @@
 # normalization. This method can be used for that.
 # ------------------------------------------------------------------------------
 import torch
-from ptt.data.ClassificationDataset import CIFAR10
-from ptt.data.torcherize import ImgClassificationDataset
 
 def normalization_values(dataset):
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=10, shuffle=False)

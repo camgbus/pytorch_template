@@ -1,6 +1,6 @@
-################################################################################
+# ------------------------------------------------------------------------------
 # Functions to save and restore different data types.
-################################################################################
+# ------------------------------------------------------------------------------
 
 import os
 
@@ -24,33 +24,39 @@ def pkl_load(name, path='obj'):
         obj = None
     return obj
 
-# PANDAS
-import pandas as pd
-def save_df(df, name, path):
-    if '.p' not in name:
-        name = name + '.pkl'
-    full_path = os.path.join(path, name)
-    df.to_pickle(full_path)
+# NUMPY
+from numpy import save, load
 
-def load_df(name, path):
-    if '.p' not in name:
-        name = name + '.pkl'
-    full_path = os.path.join(path, name)
-    print(full_path)
-    return pd.read_pickle(full_path)
+def np_dump(obj, name, path='obj'):
+    """Saves an object in npy format."""
+    if '.npy' not in name:
+        name = name + '.npy'
+    path = os.path.join(path, name)
+    save(path, obj)
+
+def np_load(name, path='obj'):
+    """Restores an object from a npy file."""
+    if '.npy' not in name:
+        name = name + '.npy'
+    path = os.path.join(path, name)
+    try:
+        obj = load(path)
+    except FileNotFoundError:
+        obj = None
+    return obj
 
 # JSON
 import json
 def save_json(dict_obj, path, name):
     """Saves a dictionary in json format."""
-    if 'txt' not in name:
+    if '.json' not in name:
         name += '.json'
     with open(os.path.join(path, name), 'w') as json_file:
         json.dump(dict_obj, json_file)
 
 def load_json(path, name):
     """Restores a dictionary from a json file."""
-    if 'txt' not in name:
+    if '.json' not in name:
         name += '.json'
     with open(os.path.join(path, name), 'r') as json_file:
         return json.load(json_file)

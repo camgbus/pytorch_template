@@ -8,7 +8,7 @@
 # ------------------------------------------------------------------------------
 
 import telegram as tel
-from src.utils.load_restore import load_json, join_path
+from ptt.utils.load_restore import load_json, join_path
 
 class TelegramBot():
     def __init__(self):

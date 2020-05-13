@@ -3,44 +3,19 @@
 # ------------------------------------------------------------------------------
 
 import os
+from ptt.data.Dataset import Dataset, Instance
 
-class ClassificationDataset:
-    """A dataset stores instances."""
-    def __init__(self, name, classes, instances, hold_out_ixs=[]):
-        self.name = name
-        self.classes = classes
-        self.instances = instances
-        self.hold_out_ixs = hold_out_ixs
-
-    def get_class_dist(self):
-        class_dist_primary = {class_name: 0 for class_name in self.classes}
-        class_dist_holdout = {class_name: 0 for class_name in self.classes}
-        for ex_ix, ex in enumerate(self.instances):
-            if ex_ix in self.hold_out_ixs:
-                class_dist_holdout[self.classes[ex.y]] += 1
-            else:
-                class_dist_primary[self.classes[ex.y]] += 1
-        return class_dist_primary, class_dist_holdout
-
-class ClassificationInstance:
-    """To define a dataset for a specific problem, inherit 
-    from this Instance class.
-    """
-    def __init__(self, name, x, y):
-        self.name = name
-        self.x = x
-        self.y = y
-
-class ClassificationPathInstance(ClassificationInstance):
+class ClassificationPathInstance(Instance):
     """Instance class where x is a path and y is an integer label corr. to
     an index of the dataset 'classes' field.
     """
-    def __init__(self, name, x_path, y):
+    def __init__(self, x_path, y, name=None, group_id=None):
+        assert isinstance(x_path, str)
         assert isinstance(y, int)
-        super().__init__(name=name, x=x_path, y=y)
+        super().__init__(x=x_path, y=y, class_ix=y, name=name, group_id=group_id)
 
-class SplitClassImageDataset(ClassificationDataset):
-    """Dataset with the structure root/split/class/filename,
+class SplitClassImageDataset(Dataset):
+    """Classification Dataset with the structure root/split/class/filename,
     where 'split' is test for the hold-out test dataset and train for the rest.
     The instances are of the type 'PathInstance'.
     """
@@ -60,6 +35,7 @@ class SplitClassImageDataset(ClassificationDataset):
                     instance = ClassificationPathInstance(name=img_name, x_path=os.path.join(class_path, img_name), y=classes.index(class_name))
                     instances.append(instance)
         super().__init__(name=name, classes=tuple(classes), instances=instances, hold_out_ixs=list(range(hold_out_start, len(instances))))
+
 
 class CIFAR10(SplitClassImageDataset):
     def __init__(self, root_path):
