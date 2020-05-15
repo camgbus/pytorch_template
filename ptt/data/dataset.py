@@ -36,7 +36,7 @@ class Dataset:
 
 
 class Instance:
-    def __init__(self, x, y, name=None, class_ix=None, group_id=None):
+    def __init__(self, x, y, name=None, class_ix=0, group_id=None):
         """
         :param x: NN input
         :param y: NN output
