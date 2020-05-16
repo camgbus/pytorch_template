@@ -3,7 +3,8 @@
 # ------------------------------------------------------------------------------
 
 import os
-from ptt.data.Dataset import Dataset, Instance
+from ptt.data.dataset import Dataset, Instance
+from ptt.paths import data_paths
 
 class ClassificationPathInstance(Instance):
     """Instance class where x is a path and y is an integer label corr. to
@@ -19,7 +20,11 @@ class SplitClassImageDataset(Dataset):
     where 'split' is test for the hold-out test dataset and train for the rest.
     The instances are of the type 'PathInstance'.
     """
-    def __init__(self, name, root_path):
+    def __init__(self, name, root_path=None):
+        if root_path is None:
+            root_path = data_paths.get(name)
+        if root_path is None:
+            raise Exception('Data path must be set in paths.py.')
         classes = []
         instances = []
         hold_out_start = None
@@ -38,5 +43,5 @@ class SplitClassImageDataset(Dataset):
 
 
 class CIFAR10(SplitClassImageDataset):
-    def __init__(self, root_path):
+    def __init__(self, root_path=None):
         super().__init__(name='cifar10', root_path=root_path)

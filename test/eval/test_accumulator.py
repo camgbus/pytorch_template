@@ -1,8 +1,8 @@
-from ptt.eval.Accumulator import Accumulator
+from ptt.eval.accumulator import Accumulator
 
 def test_acc():
-    acc = Accumulator()
+    acc = Accumulator(keys=['A'])
     for i in range(5):
-        acc.accumulate('A', float(i))
-    assert acc.get_mean('A') == 2.0
-    assert 1.41 < acc.get_std('A') < 1.415
+        acc.add('A', float(i))
+    assert acc.mean('A') == 2.0
+    assert 1.41 < acc.std('A') < 1.415

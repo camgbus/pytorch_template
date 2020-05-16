@@ -1,15 +1,13 @@
-#%%
+# ------------------------------------------------------------------------------
+# Visualize images and tensors.
+# ------------------------------------------------------------------------------
+
 import os
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import SimpleITK as sitk
 import math
-
-from src.data.dataset_obj import Dataset, Instance
-from src.data.torcherize import TorchSegmentationDataset
-from src.eval.patch_based_eval.eval import patch_based_eval
-from src.eval.metrics import dice
 
 def plot_3d_img(img, save_path=None):
     """
@@ -31,7 +29,7 @@ def plot_3d_img(img, save_path=None):
         plt.savefig(save_path)
     else:
         plt.show()
-    
+  
 def plot_3d_segmentation(img, segmentation, save_path=None):
     """
     :param img: SimpleITK image or numpy array
@@ -48,20 +46,27 @@ def plot_3d_segmentation(img, segmentation, save_path=None):
     plt.figure(figsize=(nr_cols*3,nr_rows*3))
     plt.subplots_adjust(0,0,1,1,0.01,0.01)
     for i in range(img.shape[0]):
-        plt.subplot(nr_rows,nr_cols,i+1), plt.imshow(img[i], cmap='gray', interpolation='none'), plt.axis('off')
-        plt.subplot(nr_rows,nr_cols,i+1), plt.imshow(segmentation[i], cmap='jet', interpolation='none', alpha=0.5), plt.axis('off')
+        # TODO: Background image ends up blue
+        plt.subplot(nr_rows,nr_cols,i+1)
+        plt.imshow(img[i], cmap='gray', interpolation='none'), plt.axis('off')
+        plt.subplot(nr_rows,nr_cols,i+1)
+        plt.imshow(segmentation[i], cmap='jet', interpolation='none', alpha=0.5), 
+        plt.axis('off')
     if save_path:
         plt.savefig(save_path)
     else:
         plt.show()
 
-def plot_overlay_mask(img, mask, save_path=None):
+def plot_overlay_mask(img, mask, save_path=None, figsize=(20, 20)):
+    """
+    Compare two 2d imgs, one on top of the other.
+    """
     if 'torch' in str(type(img)):
         img, mask = img.cpu().detach().numpy(), mask.cpu().detach().numpy()
         while len(img.shape) > 2:
             img, mask = img[0], mask[0]
     assert img.shape == mask.shape
-    plt.figure(figsize=(20, 20), frameon=False)
+    plt.figure(figsize=figsize, frameon=False)
     plt.imshow(img, 'gray'), plt.axis('off')
     plt.imshow(mask, 'jet', alpha=0.7), plt.axis('off')
     if save_path:
@@ -69,54 +74,63 @@ def plot_overlay_mask(img, mask, save_path=None):
     else:
         plt.show()
 
-def compare_masks(gt_mask, pred_mask, save_path):
-    assert gt_mask.shape == pred_mask.shape
-    plt.figure(figsize=(20, 20), frameon=False)
-    plt.imshow(gt_mask, 'gray'), plt.axis('off')
-    plt.imshow(pred_mask, 'jet', alpha=0.7), plt.axis('off')
+def plot_2d_img(img, save_path=None, figsize=(20, 20)):
+    assert len(img.shape) == 3
+    # If channels first, rotate so channels last
+    if np.argpartition(img.shape, 1)[0] == 0:
+        img = np.moveaxis(img, 0, 2)
+    # Plot
+    plt.figure(figsize=figsize, frameon=False)
+    plt.imshow(img, 'gray'), plt.axis('off')
     if save_path:
         plt.savefig(save_path)
     else:
         plt.show()
 
-def visualize_prediction(agent, x_slices, y_slices, norm_name):
-    # Create dataset
-    instances = [Instance(x=x_slices[slice_ix], mask=y_slices[slice_ix]) for
-        slice_ix in range(len(x_slices))]
-    ds = Dataset(name=norm_name, instances=instances)
-    ds = TorchSegmentationDataset(dataset_obj=ds, transform='crop')
-    # Set up dataloader
-    dataloader = torch.utils.data.DataLoader(ds, batch_size=1, shuffle=False)
-    img, ground_truth, prediction  = [], [], []
-    # Get predictions
-    agent.model.train(False)
-    patient_dice = []
-    for data_batch in dataloader:
-        x, y, pred = agent.get_input_target_output(data_batch)
-        pred = torch.sigmoid(pred)
-        dice_loss = dice(pred, y)
-        x, y, pred = x.cpu().detach().numpy(), y.cpu().detach().numpy(), pred.cpu().detach().numpy()
-        patient_dice.append(dice_loss.cpu().detach().numpy())
-        img.append(np.squeeze(x, axis=1)) # Remove channel dimension
-        ground_truth.append(np.squeeze(y, axis=1))
-        prediction.append(np.squeeze(pred, axis=1))
-    img = np.concatenate(img, axis=0)
-    ground_truth = np.concatenate(ground_truth, axis=0)
-    prediction = np.concatenate(prediction, axis=0)
-    plot_3d_segmentation(img, prediction)
-    plot_3d_segmentation(ground_truth, prediction)
-    return np.mean(patient_dice)
+def visualize_dataloader(dataloader, grid_size=(5, 5), save_path=None, img_size=(512, 512)):
+    imgs = get_imgs_from_dataloader(dataloader, grid_size[0]*grid_size[1])
+    img_grid = get_img_grid(imgs, grid_size[0], grid_size[1])
+    create_img_grid(img_grid=img_grid, save_path=save_path, img_size=img_size)
 
-def visualize_patch_based_prediction(agent, x_slices, y_slices, norm_name, save_path):
-    pred_slices = []
-    patient_dice = []
-    for slice_ix in range(len(x_slices)):
-        pred_mask, dice = patch_based_eval(img=x_slices[slice_ix], 
-            gt_mask=y_slices[slice_ix], agent=agent, ds_name=norm_name, 
-            patch_size=320, stride=100, nr_classes=1)
-        pred_slices.append(pred_mask)
-        patient_dice.append(dice)
-    pred_slices = np.array(pred_slices)
-    plot_3d_segmentation(x_slices, pred_slices, os.path.join(save_path, 'overlay.png'))
-    plot_3d_segmentation(y_slices, pred_slices, os.path.join(save_path, 'mask.png'))
-    return np.mean(patient_dice)
+def get_imgs_from_dataloader(dataloader, nr_imgs):
+    imgs = []
+    for x, y in dataloader:
+        x = x.cpu().detach().numpy()
+        for img in x:
+            if len(imgs) < nr_imgs:
+                imgs.append(img)
+        if len(imgs) == nr_imgs:
+            break  
+    return imgs  
+
+import random
+def get_img_grid(img_list, nr_rows, nr_cols, randomize=False):
+    if randomize:
+        random.shuffle(img_list)
+    img_grid = [[img_list[i+j*nr_cols] for i in range(nr_cols)] for j in range(nr_rows)]
+    return img_grid
+
+import sys
+
+from PIL import Image
+def create_img_grid(img_grid = [[]], img_size = (512, 512), 
+    margin = (5, 5), background_color = (255, 255, 255, 255), save_path=None):
+    bg_width = len(img_grid[0])*img_size[0] + (len(img_grid[0])+1)*margin[0]
+    bg_height = len(img_grid)*img_size[1] + (len(img_grid)+1)*margin[1]
+    new_img = Image.new('RGBA', (bg_width, bg_height), background_color)
+    left = margin[0]
+    top = margin[1]
+    for row in img_grid:
+        for img in row:
+            if np.argpartition(img.shape, 1)[0] == 0:
+                img = np.moveaxis(img, 0, 2) 
+            img = Image.fromarray((img * 255).astype(np.uint8)).resize(img_size).convert('RGB')
+            new_img.paste(img, (left, top))
+            left += img_size[0] + margin[0]
+        top += img_size[1] + margin[1]
+        left = margin[0]
+    if save_path is None:
+        new_img.show()
+    else:
+        new_img.save(save_path)
+

@@ -1,3 +1,7 @@
+# ------------------------------------------------------------------------------
+# A confusion matrix for classification tasks.
+# ------------------------------------------------------------------------------
+
 import os
 import pandas as pd
 import matplotlib.pyplot as plt

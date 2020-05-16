@@ -6,8 +6,8 @@ import numpy as np
 
 class Accumulator:
     def __init__(self, keys=['loss']):
-        self.values = dict()
         self.keys = keys
+        self.values = dict()
         self.init()
 
     def add(self, key, value, count=1):

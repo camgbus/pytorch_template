@@ -18,3 +18,4 @@ matplotlib==3.2.1
 seaborn==0.10.1
 tensorboard==2.2.1
 mypy==0.770
+simpleitk==1.2.4

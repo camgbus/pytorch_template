@@ -12,6 +12,6 @@ def test_plotting():
     res.add(3, 'F1', 0.7, data='train')
     res.add(0, 'F1', 0.3, data='val')
     res.add(3, 'F1', 0.45, data='val')
-    save_path = os.path.join('test', 'test_fgrs')
+    save_path = os.path.join('test', 'test_imgs')
     plot_results(res, measures = ['accuracy', 'F1'], save_path=save_path, title='Test figure', ending='.png')
     assert os.path.isfile(os.path.join(save_path, 'example_result.png'))

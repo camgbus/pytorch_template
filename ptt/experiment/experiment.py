@@ -15,6 +15,8 @@ import shutil
 from ptt.utils.helper_functions import get_time_string
 import ptt.utils.load_restore as lr
 import ptt.utils.pytorch.pytorch_load_restore as ptlr
+from ptt.visualization.plot_results import plot_results
+from ptt.paths import storage_path
 
 class Experiment:
     """A bundle of experiments runs with the same configuration. """
@@ -25,6 +27,7 @@ class Experiment:
         - nr_runs: number of repetitions/cross-validation folds
         """
         self.time_str = get_time_string()
+        self.review = {'time_str': self.time_str, 'notes': notes}
         if not name:
             self.name = self.time_str
         else:
@@ -32,18 +35,19 @@ class Experiment:
         # Define subdirectories and restore\save config
         self.paths = self._set_paths()
         if reload_exp:
+            assert name is not None
             self.config = lr.load_json(path=self.paths['root'], name='config')
+            self.review = lr.load_json(path=self.paths['root'], name='review')
         else:
             self.config = config
-            lr.pkl_dump(self.config, path=self.paths['root'], name='config')
             self._build_paths()
+            lr.save_json(self.config, path=self.paths['root'], name='config')
         # Set initial time
         self.time_start = time.time()
-        self.review = {'notes': notes}
 
     def _set_paths(self):
         paths = dict()
-        paths['root'] = os.path.join('obj', self.name)
+        paths['root'] = os.path.join(storage_path, self.name)
         for subpath in ['results', 'states', 'obj', 'tmp']:
             paths[subpath] = os.path.join(paths['root'], subpath)
         return paths
@@ -74,6 +78,8 @@ class Experiment:
         except:
             pass
 
+    # Functions to override for a specific kind of experiment
+
     def save_state(self, state_name, pytorch_dict={}, np_dict={}, pkl_dict={}):
         if 'model' in pytorch_dict:
             ptlr.save_model_state(pytorch_dict['model'], name=state_name, path=self.paths['states'])
@@ -99,9 +105,8 @@ class Experiment:
         for key in pkl_dict.keys():
             pkl_dict[key] = lr.pkl_load(key, path=self.paths['states'])
 
-    # Functions to override for a specific kind of experiment
     def _plot_results(self, result, save_path):
-        pass
+        plot_results(result, save_path=self.paths['results'])
 
     def _write_summary_measures(self, results):
         pass
