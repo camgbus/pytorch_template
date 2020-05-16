@@ -20,7 +20,7 @@ from ptt.paths import storage_path
 
 class Experiment:
     """A bundle of experiments runs with the same configuration. """
-    def __init__(self, config=None, name=None, notes='', reload_exp=False):
+    def __init__(self, config=None, name='', notes='', reload_exp=False):
         """
         :param config: A dictionary contains a.o. the following keys:
         - cross_validation: are the repetitions cross-validation folds?

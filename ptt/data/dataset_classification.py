@@ -20,7 +20,7 @@ class SplitClassImageDataset(Dataset):
     where 'split' is test for the hold-out test dataset and train for the rest.
     The instances are of the type 'PathInstance'.
     """
-    def __init__(self, name, root_path=None):
+    def __init__(self, name, root_path=None, input_shape=(1, 32, 32), x_norm=None):
         if root_path is None:
             root_path = data_paths.get(name)
         if root_path is None:
@@ -39,9 +39,13 @@ class SplitClassImageDataset(Dataset):
                 for img_name in os.listdir(class_path):
                     instance = ClassificationPathInstance(name=img_name, x_path=os.path.join(class_path, img_name), y=classes.index(class_name))
                     instances.append(instance)
-        super().__init__(name=name, classes=tuple(classes), instances=instances, hold_out_ixs=list(range(hold_out_start, len(instances))))
-
+        super().__init__(name=name, classes=tuple(classes), instances=instances, 
+        input_shape=input_shape, output_shape=len(classes), x_norm=x_norm,
+        hold_out_ixs=list(range(hold_out_start, len(instances))))
 
 class CIFAR10(SplitClassImageDataset):
     def __init__(self, root_path=None):
-        super().__init__(name='cifar10', root_path=root_path)
+        super().__init__(name='cifar10', root_path=root_path, 
+        input_shape=(3, 32, 32), 
+        x_norm={'mean': (0.4914, 0.4822, 0.4465), 'std': (0.247, 0.243, 0.262)}
+        )

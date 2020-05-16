@@ -3,6 +3,7 @@
 # ------------------------------------------------------------------------------
 
 import numpy as np
+import torch
 
 class Accumulator:
     def __init__(self, keys=['loss']):
@@ -11,6 +12,8 @@ class Accumulator:
         self.init()
 
     def add(self, key, value, count=1):
+        if isinstance(value, torch.Tensor):
+            value = float(value.detach().cpu().numpy())
         for _ in range(count):
             self.values[key].append(value)
 

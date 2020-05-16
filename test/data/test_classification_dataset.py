@@ -1,5 +1,7 @@
 from ptt.data.dataset_classification import CIFAR10
 
+import pytest
+pytest.mark.skip(reason="To test, download the CIFAR10 dataset in .png form.")
 def test_classification_dataset():
     ds = CIFAR10()
     assert ds.get_class_dist() == {'truck': 5000, 'automobile': 5000, 'ship': 5000, 'horse': 5000, 'bird': 5000, 'dog': 5000, 'cat': 5000, 'frog': 5000, 'deer': 5000, 'airplane': 5000}

@@ -17,9 +17,10 @@ import torch
 assert torch.cuda.is_available()
 
 from ptt.utils.argument_parsing import parse_args
-from ptt.eval.Experiment import Experiment
-from ptt.models.get_model import get_model
 
+
+from ptt.data.dataset_classification import CIFAR10
+from ptt.models.small_cnn import SmallCNN
 
 def run(experiment, args):
     # Set torch device
@@ -34,6 +35,13 @@ def run(experiment, args):
         'nr_outputs': 10}
     model = class_ref(config)
 
+
+ds = CIFAR10()
+
+
+
+
+model = SmallCNN(input_shape=ds.input_shape, output_shape=ds.output_shape)
 
 
 

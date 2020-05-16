@@ -1,6 +1,6 @@
-################################################################################
+# ------------------------------------------------------------------------------
 # Defines and parses arguments
-################################################################################
+# ------------------------------------------------------------------------------
 
 import argparse
 
@@ -8,14 +8,13 @@ def _get_parser():
     parser = argparse.ArgumentParser()
 
     # Required
-    parser.add_argument('--dataset_name', type=str)
+    parser.add_argument('--dataset_class_path', type=str)
     parser.add_argument('--agent_class_path', type=str, default='NormalNN', help="The class path of the agent.")
     parser.add_argument('--model_class_path', type=str, default='NormalNN', help="The class path of the model.")
 
     # Experiment
-    parser.add_argument('--experiment_name', type=str)
+    parser.add_argument('--experiment_name', type=str, default='')
     parser.add_argument('--experiment_notes', type=str)
-    parser.add_argument('--experiment_run_class_path', type=str, help="Optionally write a custum ExperimentRun subclass to write additional information in the review.json file.")
 
     # Dataset
     parser.add_argument('--restore_dataset', dest='restore_dataset', default=False, action='store_true', help='Reload dataset object.')
@@ -26,14 +25,16 @@ def _get_parser():
     parser.add_argument('--test_ratio', type=float, default=0.2, help="Only relevant if 'cross_validation' if false.")
 
     # Training
-    parser.add_argument('--gpu', type=int, default=0)
+    parser.add_argument('--device', type=str, default='cuda:0')
     parser.add_argument('--batch_size', type=int, default=128)    
-    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--momentum', type=float, default=0)
     parser.add_argument('--weight_decay', type=float, default=0)
     parser.add_argument('--optimizer', type=str, default='Adam')
     parser.add_argument('--schedule', nargs="+", type=int, default=[2],
                         help="The list of epoch numbers to reduce learning rate by factor of 0.1. Last number is the end epoch")
+
+    config = {'batch_size':128, 'lr':1e-3, 'momentum':0.9, 'device':'cuda:0', 'nr_epochs': 10, 'tracking_interval': 2}
 
     return parser
 

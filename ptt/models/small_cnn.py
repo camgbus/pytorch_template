@@ -1,10 +1,14 @@
+# ------------------------------------------------------------------------------
+# Example for a small CNN.
+# ------------------------------------------------------------------------------
+
 import torch.nn as nn
 import torch.nn.functional as F
+from ptt.models.model import Model
 
-
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
+class SmallCNN(Model):
+    def __init__(self, input_shape=(3, 32, 32), output_shape=10):
+        super().__init__(input_shape, output_shape)
         self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)

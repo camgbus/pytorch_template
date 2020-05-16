@@ -5,14 +5,17 @@
 import torch
 import numpy as np
 
-def dice(pred, target, smooth = 1.):
-    pred = pred.contiguous()
+def accuracy(outputs, targets):
+    _, pred = torch.max(outputs.data, 1)
+    total = outputs.size(0)
+    correct = (pred == targets).sum().item()
+    return correct/total
+
+def dice(outputs, target, smooth = 1.):
+    outputs = outputs.contiguous()
     target = target.contiguous()    
-
-    intersection = (pred * target).sum(dim=2).sum(dim=2)
-
-    loss = (1 - ((2. * intersection + smooth) / (pred.sum(dim=2).sum(dim=2) + target.sum(dim=2).sum(dim=2) + smooth)))
-     
+    intersection = (outputs * target).sum(dim=2).sum(dim=2)
+    loss = (1 - ((2. * intersection + smooth) / (outputs.sum(dim=2).sum(dim=2) + target.sum(dim=2).sum(dim=2) + smooth)))
     return loss.mean()
 
 def np_dice(mask_a, mask_b, smooth = 1.):

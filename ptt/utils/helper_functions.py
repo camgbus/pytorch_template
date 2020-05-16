@@ -22,7 +22,6 @@ def get_time_string(cover=False):
         return date
 
 import ntpath
-import os
 
 def divide_path_fname(path):
     path_to_file, file_name = ntpath.split(path)
