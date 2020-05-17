@@ -1,73 +1,45 @@
-
-#%%
-ON_JUPYTER = False
-try:
-    from IPython import get_ipython
-    # Autoreload imported modules for Jupyter
-    get_ipython().magic('load_ext autoreload') 
-    get_ipython().magic('autoreload 2')
-    ON_JUPYTER = True
-except AttributeError:
-    pass
-
-import numpy as np
-import os
-import sys
 import torch
 assert torch.cuda.is_available()
-
-from ptt.utils.argument_parsing import parse_args
-
+import torch.nn as nn
+import torch.optim as optim
 
 from ptt.data.dataset_classification import CIFAR10
 from ptt.models.small_cnn import SmallCNN
-
-def run(experiment, args):
-    # Set torch device
-    torch.cuda.set_device(args.device)
-    # Fetch data
-
-    
-    # Build model
-    class_ref = get_model(name)
-    config = {'pretrained': args.pretrained, 
-        'freeze_params': args.freeze_params, 
-        'nr_outputs': 10}
-    model = class_ref(config)
+from ptt.data.pytorch_dataset import ImgClassificationDataset
+from ptt.agents.classification_agent import ClassificationAgent
+from ptt.eval.result import Result
+from ptt.visualization.plot_results import plot_results
 
 
-ds = CIFAR10()
-
-
-
-
-model = SmallCNN(input_shape=ds.input_shape, output_shape=ds.output_shape)
-
-
-
-
-
-
-
-
-#%%
 
 
 if __name__ == '__main__':
-    # Set random seeds
-    np.random.seed(0)
-    torch.manual_seed(0)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    if not ON_JUPYTER:        
-        # Use console arguments
-        args = parse_args(sys.argv[1:])
-        experiment = Experiment(args)
-        try:
-            run(experiment, args)
-        except:
-            experiment.finish(exception=e)
+    config = {'batch_size':128, 'lr':1e-3, 'momentum':0.9, 'device':'cuda:0', 'nr_epochs': 5, 'tracking_interval': 1}
 
+    # Fetch data, transform to PyTorch format and build dataloaders
+    data = CIFAR10()
+    datasets = {'train': ImgClassificationDataset(data, ix_lst=None, resize=None, norm=data.x_norm),
+        'test': ImgClassificationDataset(data, ix_lst=data.hold_out_ixs, resize=None, norm=data.x_norm)}
+    dataloaders = dict()
+    for split, ds in datasets.items():
+        shuffle = not(split == 'test')
+        dataloaders[split] = torch.utils.data.DataLoader(ds, batch_size=config['batch_size'], shuffle=shuffle)
+    print('Got dataset')
 
-#%%
-#args = {}
+    # Get model
+    model = SmallCNN(input_shape=data.input_shape, output_shape=data.output_shape)
+    model.to(config['device'])
+
+    # Devine criterion and optimizer
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(model.parameters(), lr=config['lr'], momentum=config['momentum'])
+
+    # Train model
+    results = Result(name='training_trajectory')
+    agent = ClassificationAgent(config=config, base_criterion=criterion, verbose=True)
+    agent.train(results, model, optimizer, trainloader=dataloaders['train'], dataloaders=dataloaders)
+
+    # Visualize results
+    save_path = os.path.join('test', 'test_obj')
+    plot_results(res, measures=['accuracy'], save_path=save_path, title='CIFAR10 example accuracy', ending='.png')
+    plot_results(res, measures=['loss'], save_path=save_path, ylog=True, title='CIFAR10 example loss', ending='.png')

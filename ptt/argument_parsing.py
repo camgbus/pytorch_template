@@ -14,7 +14,7 @@ def _get_parser():
 
     # Experiment
     parser.add_argument('--experiment_name', type=str, default='')
-    parser.add_argument('--experiment_notes', type=str)
+    parser.add_argument('--experiment_notes', type=str, default='')
 
     # Dataset
     parser.add_argument('--restore_dataset', dest='restore_dataset', default=False, action='store_true', help='Reload dataset object.')
