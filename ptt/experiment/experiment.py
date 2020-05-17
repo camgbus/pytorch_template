@@ -78,7 +78,7 @@ class ExperimentRun:
         self.run_ix = run_ix
         self.paths = self._set_paths(exp_path)
         self.time_start = time.time()
-        self.review = {'time_start': self.time_start}
+        self.review = {'time_str': get_time_string()}
 
     def _set_paths(self, exp_path):
         paths = dict()

@@ -2,6 +2,7 @@
 # An example equivalent to cifar_10_experiment_notebook bot using the
 # experiment formatting and cross-validation, not using hold-out data.
 # ------------------------------------------------------------------------------
+
 import sys
 import numpy as np
 import torch
@@ -46,7 +47,8 @@ def run(exp, exp_run, data):
     agent.train(results, model, optimizer, trainloader=dataloaders['train'], dataloaders=dataloaders)
 
     return results
-import sys
+
+
 if __name__ == '__main__':
     # Set random seeds
     np.random.seed(0)
@@ -65,11 +67,8 @@ if __name__ == '__main__':
     for ix in range(config['nr_runs']):
         print('Running repetition {} of {}'.format(ix, config['nr_runs']))
         exp_run = exp.get_run(run_ix=ix)
-        #try:
-        results = run(exp=exp, exp_run=exp_run, data=data)
-        exp_run.finish(results=results)
-        
-        
-        #except Exception as e: 
-        #    exp_run.finish(exception=e)
-
+        try:
+            results = run(exp=exp, exp_run=exp_run, data=data)
+            exp_run.finish(results=results)
+        except Exception as e: 
+            exp_run.finish(exception=e)
