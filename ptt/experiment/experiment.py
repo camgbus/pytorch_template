@@ -16,46 +16,78 @@ from ptt.utils.helper_functions import get_time_string
 import ptt.utils.load_restore as lr
 import ptt.utils.pytorch.pytorch_load_restore as ptlr
 from ptt.visualization.plot_results import plot_results
+from ptt.experiment.data_splitting import split_dataset
 from ptt.paths import storage_path
 
 class Experiment:
-    """A bundle of experiments runs with the same configuration. """
+    """A bundle of experiment runs with the same configuration. """
     def __init__(self, config=None, name='', notes='', reload_exp=False):
         """
         :param config: A dictionary contains a.o. the following keys:
         - cross_validation: are the repetitions cross-validation folds?
         - nr_runs: number of repetitions/cross-validation folds
+        - test_ratio: Ratio of test data
+        - val_ratio: Ratio of validation data from non-test data
+        :param name: experiment name. If empty, a datestring is set as name.
+        :param notes: optional notes about the experiment
+        :param reload_exp: Reload or throw error when expriment name exists?
+            Meant for performing runs separatedly.
         """
         self.time_str = get_time_string()
         self.review = {'time_str': self.time_str, 'notes': notes}
+        self.splits = None
         if not name:
             self.name = self.time_str
         else:
             self.name = name
-        # Define subdirectories and restore\save config
-        self.paths = self._set_paths()
+        # Set path in defined storage directory
+        self.path = os.path.join(storage_path, self.name)
+        # Restore files
         if reload_exp:
             assert name is not None
-            self.config = lr.load_json(path=self.paths['root'], name='config')
-            self.review = lr.load_json(path=self.paths['root'], name='review')
+            self.config = lr.load_json(path=self.path, name='config')
+            self.review = lr.load_json(path=self.path, name='review')
         else:
+            os.makedirs(self.path)
             self.config = config
-            self._build_paths()
-            lr.save_json(self.config, path=self.paths['root'], name='config')
-        # Set initial time
-        self.time_start = time.time()
+            lr.save_json(self.config, path=self.path, name='config')
+            lr.save_json(self.review, path=self.path, name='review')
 
-    def _set_paths(self):
+    def set_data_splits(self, ds):
+        try:
+            self.splits = lr.load_json(path=self.path, name='splits')
+        except FileNotFoundError:
+            print('Dividing dataset')
+            self.splits = split_dataset(ds, test_ratio=self.config['test_ratio'], 
+            val_ratio=self.config['val_ratio'], nr_repetitions=self.config['nr_runs'], 
+            cross_validation=self.config['cross_validation'])
+            lr.save_json(self.splits, path=self.path, name='splits')
+            print('\n')
+
+    def get_run(self, run_ix):
+        return ExperimentRun(run_ix, self.path)
+
+    def finish(self, results=None):
+        """After running all runs, finish expeirment by recording average values"""
+        # TODO first do eval.result.ExperimentResults
+        pass
+
+class ExperimentRun:
+    """Experiment runs with different indexes for train, val, test. """
+    def __init__(self, run_ix, exp_path):
+        self.run_ix = run_ix
+        self.paths = self._set_paths(exp_path)
+        self.time_start = time.time()
+        self.review = {'time_start': self.time_start}
+
+    def _set_paths(self, exp_path):
         paths = dict()
-        paths['root'] = os.path.join(storage_path, self.name)
+        paths['root'] = os.path.join(exp_path, str(self.run_ix))
+        os.mkdir(paths['root'])
         for subpath in ['results', 'states', 'obj', 'tmp']:
             paths[subpath] = os.path.join(paths['root'], subpath)
+            os.mkdir(paths[subpath])
         return paths
-        
-    def _build_paths(self):
-        os.makedirs(self.paths['root'])
-        for subpath in ['results', 'states', 'obj', 'tmp']:
-            os.mkdir(self.paths[subpath])
 
     def finish(self, results=None, exception=None):
         elapsed_time = time.time() - self.time_start

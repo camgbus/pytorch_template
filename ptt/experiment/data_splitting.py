@@ -25,19 +25,20 @@ def split_dataset(dataset, test_ratio=0.2, val_ratio=0.2, nr_repetitions=5, cros
             exclude_ixs=dataset.hold_out_ixs, stratisfied=True,
             respecting_groups=respecting_groups)
         for k in range(nr_repetitions):
-            #print('Cross-validation fold k {} of {}'.format(k+1, nr_repetitions))
+            print('Cross-validation fold k {} of {}'.format(k+1, nr_repetitions))
             train, val = [], []
             for j in range(nr_repetitions):
                 if j != k:
                     train += folds[j]
-            train, val = split_instances(dataset=dataset, ratio=1-val_ratio, 
-                exclude_ixs=dataset.hold_out_ixs+folds[k],     
-                stratisfied=True, respecting_groups=respecting_groups)
+            if val_ratio > 0:
+                train, val = split_instances(dataset=dataset, ratio=1-val_ratio, 
+                    exclude_ixs=dataset.hold_out_ixs+folds[k],     
+                    stratisfied=True, respecting_groups=respecting_groups)
             splits.append({'train': train, 'val': val, 'test': folds[k]})
     else:
         for k in range(nr_repetitions):
-            #print('Repetition k {} of {}'.format(k+1, nr_repetitions))
-            train_validation, test = split_instances(dataset=dataset, 
+            print('Repetition k {} of {}'.format(k+1, nr_repetitions))
+            train_val, test = split_instances(dataset=dataset, 
                 ratio=1-test_ratio, exclude_ixs=dataset.hold_out_ixs, 
                 stratisfied=True, respecting_groups=respecting_groups)
             train, val = split_instances(dataset=dataset, ratio=1-val_ratio, 

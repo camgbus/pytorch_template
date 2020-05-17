@@ -7,9 +7,8 @@ To install and use:
 2. cd to the project root (where setup.py lives)
 3. Install CUDA if necessary and install PyTorch through conda with the command specified by https://pytorch.org/. The tutorial was written using PyTorch 1.5.0. and CUDA10.2., so the command for Linux was 'install pytorch torchvision cudatoolkit=10.2 -c pytorch'
 4. Execute 'pip install -r requirements.txt'
-5. Execute 'pytest' to test the correct installation. Note that one of the tests tests whether at least one GPU is present.
-6. Make changes :)
+5. Execute 'pytest' to test the correct installation. Note that one of the tests tests whether at least one GPU is present. Some tests use the CIFAR10 data and are ignored if this data is not present.
 
-To run the CIFAR10 example:
-1. Download the HAM1000 dataset from https://www.kaggle.com/kmader/skin-cancer-mnist-ham10000/home
-2. 
+To run the CIFAR10 experiment example:
+1. Download CIFAR10 data in .png format from https://www.kaggle.com/swaroopkml/cifar10-pngs-in-folders
+2. Execute sh scripts/cifar_10_experiment_example.sh

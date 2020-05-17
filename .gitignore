@@ -1,7 +1,7 @@
 # Ignore the following directories and files:
 /ignored/*
 ptt/utils/telegram_bot/telegram_login.json
-
+/storage/*
 
 # VS code project setup
 .vscode
