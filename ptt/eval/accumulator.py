@@ -13,9 +13,11 @@ class Accumulator:
 
     def add(self, key, value, count=1):
         if isinstance(value, torch.Tensor):
-            value = float(value.detach().cpu().numpy())
+            np_value = float(value.detach().cpu().numpy())
+        else:
+            np_value = value
         for _ in range(count):
-            self.values[key].append(value)
+            self.values[key].append(np_value)
 
     def mean(self, key):
         return np.mean(self.values[key])

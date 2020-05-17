@@ -81,12 +81,13 @@ def plot_2d_img(img, save_path=None, figsize=(20, 20)):
         img = np.moveaxis(img, 0, 2)
     # Plot
     plt.figure(figsize=figsize, frameon=False)
-    plt.imshow(img, 'gray'), plt.axis('off')
+    plt.imshow(img), plt.axis('off')
     if save_path:
         plt.savefig(save_path)
     else:
         plt.show()
 
+# TODO: add unnormalization for normalized images
 def visualize_dataloader(dataloader, grid_size=(5, 5), save_path=None, img_size=(512, 512)):
     imgs = get_imgs_from_dataloader(dataloader, grid_size[0]*grid_size[1])
     img_grid = get_img_grid(imgs, grid_size[0], grid_size[1])

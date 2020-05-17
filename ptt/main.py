@@ -1,3 +1,4 @@
+import os
 import torch
 assert torch.cuda.is_available()
 import torch.nn as nn
@@ -41,5 +42,5 @@ if __name__ == '__main__':
 
     # Visualize results
     save_path = os.path.join('test', 'test_obj')
-    plot_results(res, measures=['accuracy'], save_path=save_path, title='CIFAR10 example accuracy', ending='.png')
-    plot_results(res, measures=['loss'], save_path=save_path, ylog=True, title='CIFAR10 example loss', ending='.png')
+    plot_results(results, measures=['accuracy'], save_path=save_path, title='CIFAR10 example accuracy', ending='.png')
+    plot_results(results, measures=['loss'], save_path=save_path, ylog=True, title='CIFAR10 example loss', ending='.png')

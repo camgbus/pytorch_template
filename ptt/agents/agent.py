@@ -40,7 +40,7 @@ class Agent:
             for metric_key in self.metrics.keys():
                 results.add(epoch=epoch, metric=metric_key, data=dl_name, value=acc.mean(metric_key))
             if self.verbose:
-                print('Epoch {} data {} loss {}'.format(epoch, dl_name, acc.mean('accuracy')))
+                print('Epoch {} data {} loss {}'.format(epoch, dl_name, acc.mean('loss')))
 
     def train(self, results, model, optimizer, trainloader, valloader=None, dataloaders=dict()):
         """
