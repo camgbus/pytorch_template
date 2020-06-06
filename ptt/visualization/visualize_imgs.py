@@ -123,7 +123,11 @@ def create_img_grid(img_grid = [[]], img_size = (512, 512),
     top = margin[1]
     for row in img_grid:
         for img in row:
-            if np.argpartition(img.shape, 1)[0] == 0:
+            # If grayscale image
+            if img.shape[0]==1:
+                img = img[0]
+            # If channels first
+            elif np.argpartition(img.shape, 1)[0] == 0:
                 img = np.moveaxis(img, 0, 2) 
             img = Image.fromarray((img * 255).astype(np.uint8)).resize(img_size).convert('RGB')
             new_img.paste(img, (left, top))
