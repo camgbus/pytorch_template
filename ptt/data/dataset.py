@@ -40,7 +40,7 @@ class Dataset:
 
     def get_class_instance_ixs(self, class_name, exclude_ixs):
         return [ix for ix, ex in enumerate(self.instances) if 
-            ex.y==self.classes.index(class_name) and ix not in exclude_ixs]
+            ex.class_ix==self.classes.index(class_name) and ix not in exclude_ixs]
 
 
 class Instance:
