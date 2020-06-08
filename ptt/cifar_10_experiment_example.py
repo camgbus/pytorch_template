@@ -65,7 +65,7 @@ if __name__ == '__main__':
     exp.set_data_splits(data)
     # Iterate over repetitions and run
     for ix in range(config['nr_runs']):
-        print('Running repetition {} of {}'.format(ix, config['nr_runs']))
+        print('Running repetition {} of {}'.format(ix+1, config['nr_runs']))
         exp_run = exp.get_run(run_ix=ix)
         try:
             results = run(exp=exp, exp_run=exp_run, data=data)
