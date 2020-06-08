@@ -28,16 +28,18 @@ class Agent:
         inputs = model.preprocess_input(inputs)       
         return inputs, targets
 
-    def track_statistics(self, epoch, results, model, dataloaders):
-        acc = Accumulator(self.metrics.keys())
+    def track_statistics(self, epoch, results, model, dataloaders, metrics=None):
+        if metrics is None:
+            metrics = self.metrics
+        acc = Accumulator(metrics.keys())
         for dl_name, dl in dataloaders.items():
             for data in dl:
                 inputs, targets = self.get_inputs_targets(data, model)
                 outputs = model(inputs)
-                for metric_key, metric_fn in self.metrics.items():
+                for metric_key, metric_fn in metrics.items():
                     metric_value = metric_fn(outputs, targets)
                     acc.add(metric_key, metric_value, count=len(inputs))
-            for metric_key in self.metrics.keys():
+            for metric_key in metrics.keys():
                 results.add(epoch=epoch, metric=metric_key, data=dl_name, value=acc.mean(metric_key))
             if self.verbose:
                 print('Epoch {} data {} loss {}'.format(epoch, dl_name, acc.mean('loss')))
