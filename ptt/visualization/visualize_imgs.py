@@ -9,14 +9,30 @@ import matplotlib.pyplot as plt
 import SimpleITK as sitk
 import math
 
+def ensure_three_dimensions(img):
+    if len(img.shape) == 4:
+        assert img.shape[0] == 1, "More than one image in batch."
+    return img[0]
+
+def ensure_slices_first(img):
+    assert len(img.shape) == 3, "Image should have three dimensions."
+    if np.argmin(img.shape) == 2:
+        img = np.moveaxis(img, 2, 0)
+    assert np.argmin(img.shape) == 0
+    return img
+
 def plot_3d_img(img, save_path=None):
     """
     :param img: SimpleITK image or numpy array
     """
     if 'SimpleITK.SimpleITK.Image' in str(type(img)):
         img = sitk.GetArrayFromImage(img)
-    assert len(img.shape) == 3
-    assert img.shape[1] == img.shape[2]
+    elif 'torchio.data.image.Image' in str(type(img)):
+        img = img.tensor.numpy()
+    # Ensure right dimensions
+    img = ensure_three_dimensions(img)
+    img = ensure_slices_first(img)
+    # Create grid
     nr_slices = len(img)
     nr_cols=8
     nr_rows=int(math.ceil(nr_slices/nr_cols))
@@ -37,9 +53,16 @@ def plot_3d_segmentation(img, segmentation, save_path=None):
     if 'SimpleITK.SimpleITK.Image' in str(type(img)):
         img = sitk.GetArrayFromImage(img)
         segmentation = sitk.GetArrayFromImage(segmentation)
-    assert len(img.shape) == 3
-    assert img.shape[1] == img.shape[2] # Channels first
+    elif 'torchio.data.image.Image' in str(type(img)):
+        img = img.tensor.numpy()
+        segmentation = segmentation.tensor.numpy()
+    # Ensure right dimensions
+    img = ensure_three_dimensions(img)
+    img = ensure_slices_first(img)
+    segmentation = ensure_three_dimensions(segmentation)
+    segmentation = ensure_slices_first(segmentation)
     assert img.shape == segmentation.shape
+    # Create grid
     nr_slices = len(segmentation)
     nr_cols=8
     nr_rows=int(math.ceil(nr_slices/nr_cols))
@@ -75,10 +98,12 @@ def plot_overlay_mask(img, mask, save_path=None, figsize=(20, 20)):
         plt.show()
 
 def plot_2d_img(img, save_path=None, figsize=(20, 20)):
-    assert len(img.shape) == 3
-    # If channels first, rotate so channels last
-    if np.argpartition(img.shape, 1)[0] == 0:
-        img = np.moveaxis(img, 0, 2)
+    while img.shape[0] == 1:
+        img = img[0]
+    if len(img.shape) == 3:
+        # If channels first, rotate so channels last
+        if np.argpartition(img.shape, 1)[0] == 0:
+            img = np.moveaxis(img, 0, 2)
     # Plot
     plt.figure(figsize=figsize, frameon=False)
     plt.imshow(img), plt.axis('off')
@@ -123,13 +148,13 @@ def create_img_grid(img_grid = [[]], img_size = (512, 512),
     top = margin[1]
     for row in img_grid:
         for img in row:
-            # If grayscale image
-            if img.shape[0]==1:
+            if img.shape[0]==1: # Grayscale
                 img = img[0]
-            # If channels first
-            elif np.argpartition(img.shape, 1)[0] == 0:
-                img = np.moveaxis(img, 0, 2) 
-            img = Image.fromarray((img * 255).astype(np.uint8)).resize(img_size).convert('RGB')
+                img = Image.fromarray(img).resize(img_size)
+            else: # Colored image
+                if np.argpartition(img.shape, 1)[0] == 0: # If channels first
+                    img = np.moveaxis(img, 0, 2) 
+                img = Image.fromarray((img * 255).astype(np.uint8)).resize(img_size).convert('RGB')
             new_img.paste(img, (left, top))
             left += img_size[0] + margin[0]
         top += img_size[1] + margin[1]
@@ -138,4 +163,3 @@ def create_img_grid(img_grid = [[]], img_size = (512, 512),
         new_img.show()
     else:
         new_img.save(save_path)
-

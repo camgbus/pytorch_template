@@ -13,7 +13,7 @@ class Dataset:
         :param hold_out_ixs: instances which will not be evaluated until the end 
         :param input_shape: mean input shape
         :param output_shape: same as input_shape for segmentation or autoencoding, 
-            numpber of classes for classification
+            number of classes for classification
         :param x_norm: normalization values for the input
         """
         self.name = name

@@ -44,15 +44,17 @@ class Agent:
             if self.verbose:
                 print('Epoch {} data {} loss {}'.format(epoch, dl_name, acc.mean('loss')))
 
-    def train(self, results, model, optimizer, trainloader, valloader=None, dataloaders=dict()):
+    def train(self, results, model, optimizer, trainloader, valloader=None, dataloaders=dict(), init_epoch=0, nr_epochs=None):
         """
         :param model: a model instance.
         :param trainloader: dataloader to train the model
         :param dataloaders: dictionary of dataloaders for which results are 
             reported.
         """
-        self.track_statistics(0, results, model, dataloaders)
-        for epoch in range(self.config.get('nr_epochs', 100)):
+        if nr_epochs is None:
+            nr_epochs = self.config.get('nr_epochs', 100)
+        self.track_statistics(init_epoch, results, model, dataloaders)
+        for epoch in range(init_epoch, init_epoch+nr_epochs):
             for i, data in enumerate(trainloader):
                 # Get data
                 inputs, targets = self.get_inputs_targets(data, model)

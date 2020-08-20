@@ -34,8 +34,6 @@ class PytorchDataset(Dataset):
         transform_operations += transform_lst
         if norm is not None:
             transform_operations.append(transforms.Normalize(mean=norm['mean'], std=norm['std']))
-  
-
         self.transform = transforms.Compose(transform_operations)
 
     def __len__(self):
