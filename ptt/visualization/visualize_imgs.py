@@ -45,17 +45,24 @@ def plot_3d_img(img, save_path=None):
         plt.savefig(save_path)
     else:
         plt.show()
-  
+
+
+def img_to_numpy_array(x):
+    if 'SimpleITK.SimpleITK.Image' in str(type(x)):
+        x = sitk.GetArrayFromImage(x)
+    elif 'torchio.data.image.Image' in str(type(x)):
+        x = x.tensor.numpy()
+    elif 'torch.Tensor' in str(type(x)):
+        x = x.numpy()
+    # TODO: catch unsupported types
+    return x
+
 def plot_3d_segmentation(img, segmentation, save_path=None):
     """
     :param img: SimpleITK image or numpy array
     """
-    if 'SimpleITK.SimpleITK.Image' in str(type(img)):
-        img = sitk.GetArrayFromImage(img)
-        segmentation = sitk.GetArrayFromImage(segmentation)
-    elif 'torchio.data.image.Image' in str(type(img)):
-        img = img.tensor.numpy()
-        segmentation = segmentation.tensor.numpy()
+    img = img_to_numpy_array(img)
+    segmentation = img_to_numpy_array(segmentation)
     # Ensure right dimensions
     img = ensure_three_dimensions(img)
     img = ensure_slices_first(img)
@@ -165,8 +172,6 @@ def create_img_grid(img_grid = [[]], img_size = (512, 512),
     else:
         new_img.save(save_path)
 
-
-
 import sys
 def get_x_y_from_dataloader(dataloader, nr_imgs):
     imgs = []
@@ -229,7 +234,7 @@ def color_mask(mask):
     mask = np.array([red, green, blue]).T
     return mask
 
-def create_x_y_grid(img_grid = [[]], img_size = (512, 512), 
+def create_x_y_grid(img_grid = [[]], img_size = (512, 512), alpha=0.5,
     margin = (5, 5), background_color = (255, 255, 255, 255), save_path=None):
     bg_width = len(img_grid[0])*img_size[0] + (len(img_grid[0])+1)*margin[0]
     bg_height = len(img_grid)*img_size[1] + (len(img_grid)+1)*margin[1]
@@ -256,7 +261,7 @@ def create_x_y_grid(img_grid = [[]], img_size = (512, 512),
                     img = Image.fromarray((img * 255).astype(np.uint8)).resize(img_size).convert('RGBA')
                     mask = Image.fromarray((mask * 255).astype(np.uint8)).resize(img_size).convert('RGBA')
                 # Overlay images
-                x_y_img = overlay_images(img, mask)
+                x_y_img = overlay_images(img, mask, alpha=alpha)
                 # Paste into original image
                 new_img.paste(x_y_img, (left, top))
                 left += img_size[0] + margin[0]
@@ -267,8 +272,9 @@ def create_x_y_grid(img_grid = [[]], img_size = (512, 512),
     else:
         new_img.save(save_path)
 
-def visualize_dataloader_with_masks(dataloader, grid_size=(5,5), save_path=None, img_size=(512, 512)):
+def visualize_dataloader_with_masks(dataloader, grid_size=(5,5), save_path=None, 
+    img_size=(512, 512), alpha=0.5):
     imgs = get_x_y_from_dataloader(dataloader, grid_size[0]*grid_size[1])
     img_grid = get_img_grid(imgs, grid_size[0], grid_size[1])
-    create_x_y_grid(img_grid=img_grid, save_path=save_path, img_size=img_size)
+    create_x_y_grid(img_grid=img_grid, save_path=save_path, img_size=img_size, alpha=alpha)
     

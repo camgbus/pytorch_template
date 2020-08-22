@@ -29,7 +29,7 @@ class Dataset:
         """Get class (category) distribution
         :param ixs: if not None, distribution for only these indexes. Otherwise
         distribution for all indexes not part of the hold-out dataset.
-        """
+        """ 
         if ixs is None:
             ixs = [ix for ix in range(self.size) if ix not in self.hold_out_ixs]
         class_dist = {class_ix: 0 for class_ix in self.classes}
@@ -42,6 +42,17 @@ class Dataset:
         return [ix for ix, ex in enumerate(self.instances) if 
             ex.class_ix==self.classes.index(class_name) and ix not in exclude_ixs]
 
+    def get_instance(self, name):
+        instances = [instance for instance in self.instances if instance.name == name]
+        if len(instances) == 0:
+            return None
+        else:
+            assert len(instances) == 1, "There are more than one instance with that name"
+            return instances[0]
+
+    def get_instance_ixs_from_names(self, name_lst):
+        ixs = [ix for ix, instance in enumerate(self.instances) if instance.name in name_lst]
+        return ixs
 
 class Instance:
     def __init__(self, x, y, name=None, class_ix=0, group_id=None):
