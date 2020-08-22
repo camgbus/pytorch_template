@@ -6,14 +6,13 @@
 class Dataset:
     """A dataset stores instances."""
     def __init__(self, name, instances, classes=('0'), hold_out_ixs=[], 
-        input_shape=(1, 32, 32), output_shape=(1, 32, 32), x_norm=None):
+        mean_shape=(1, 32, 32), output_shape=(1, 32, 32), x_norm=None):
         """
         :param name: name of a dataset
         :param instances: list of Instance objects
         :param hold_out_ixs: instances which will not be evaluated until the end 
-        :param input_shape: mean input shape
-        :param output_shape: same as input_shape for segmentation or autoencoding, 
-            number of classes for classification
+        :param mean_shape: mean input shape
+        :param output_shape: output shape
         :param x_norm: normalization values for the input
         """
         self.name = name
@@ -21,7 +20,7 @@ class Dataset:
         self.size = len(instances)
         self.classes = classes
         self.hold_out_ixs = hold_out_ixs
-        self.input_shape = input_shape
+        self.mean_shape = mean_shape
         self.output_shape = output_shape
         self.x_norm = x_norm
 

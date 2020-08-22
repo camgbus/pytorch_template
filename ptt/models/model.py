@@ -11,7 +11,7 @@ from ptt.utils.pytorch.pytorch_load_restore import load_model_state, save_model_
 
 class Model(nn.Module):
     """
-    :param input_shape: channels first
+    :param input_shape: channels, width, height, optional(depth)
     """
     def __init__(self, input_shape=(1, 32, 32), output_shape=2):
         super(Model, self).__init__()
