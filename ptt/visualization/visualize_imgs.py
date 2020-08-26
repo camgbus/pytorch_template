@@ -172,12 +172,38 @@ def create_img_grid(img_grid = [[]], img_size = (512, 512),
     else:
         new_img.save(save_path)
 
+# TODO: twice defined, once in pts
+def one_output_channel_single(y):
+    channel_dim = 0
+    target_shape = list(y.shape)
+    nr_labels = target_shape[channel_dim]
+    target_shape[channel_dim] = 1
+    target = torch.zeros(target_shape, dtype=torch.int32)
+    label_nr_mask = torch.zeros(target_shape, dtype=torch.int32)
+    for label_nr in range(nr_labels):
+        label_nr_mask.fill_(label_nr)
+        target = torch.where(y[label_nr] == 1, label_nr_mask, target)
+    return target
+def one_output_channel(y, channel_dim=0):
+    if channel_dim == 0:
+        return one_output_channel_single(y)
+    else:
+        assert channel_dim == 1, "Not implemented for channel_dim > 1"
+    batch = [one_output_channel_single(x) for x in y]
+    return torch.stack(batch, dim=0)
+
 import sys
 def get_x_y_from_dataloader(dataloader, nr_imgs):
     imgs = []
     for x, y in dataloader:
         x = x.cpu().detach().numpy()
+
+        # If one channel per label, transform into one mask
+        if y.shape[1] > 1:
+            y = one_output_channel(y, channel_dim=1)
+
         y = y.cpu().detach().numpy()
+
         if len(x.shape) == 5: # If each x or y is a batch of volumes
             # Go from shape (batch, 1, width, height, depth) to 
             # (batch*depth, 1, width, height) by shifting the depth channel to the
