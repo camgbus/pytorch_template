@@ -18,7 +18,5 @@ class TelegramBot():
         self.chat_id = login_data['chat_id']
         self.bot = tel.Bot(token=login_data['token'])
 
-        self.bot.answer_inline_query('holis', ['aver'])
-
     def send_msg(self, msg):
         self.bot.send_message(chat_id=self.chat_id, text=msg)
