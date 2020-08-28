@@ -20,3 +20,4 @@ tensorboard==2.2.1
 mypy==0.770
 simpleitk==1.2.4
 torch-summary==1.2.0
+python-telegram-bot==12.8

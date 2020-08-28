@@ -6,16 +6,19 @@
 # Then, place these strings in a telegram_login.json file in this directory. 
 # That file is ignored by git.
 # ------------------------------------------------------------------------------
-
+#%%
 import telegram as tel
 from ptt.utils.load_restore import load_json, join_path
 
 class TelegramBot():
-    def __init__(self):
-        login_data = load_json(path=join_path(['src', 'utils', 'telegram_bot']), 
-            name='telegram_login')
+    def __init__(self, login_data = None):
+        if login_data is None:
+            login_data = load_json(path=join_path(['src', 'utils', 'telegram_bot']), 
+                name='telegram_login')
         self.chat_id = login_data['chat_id']
         self.bot = tel.Bot(token=login_data['token'])
+
+        self.bot.answer_inline_query('holis', ['aver'])
 
     def send_msg(self, msg):
         self.bot.send_message(chat_id=self.chat_id, text=msg)
