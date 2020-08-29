@@ -41,9 +41,9 @@ class Experiment:
         else:
             self.name = name
         # Set path in defined storage directory
-        self.path = os.path.join(storage_path, self.name)
+        self.path = os.path.join(os.path.join(storage_path, 'exp'), self.name)
         # Restore files
-        if reload_exp:
+        if reload_exp and os.path.exists(self.path):
             assert name is not None
             self.config = lr.load_json(path=self.path, name='config')
             self.review = lr.load_json(path=self.path, name='review')
