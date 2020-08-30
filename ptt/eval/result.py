@@ -21,6 +21,8 @@ class Result():
     def add(self, epoch, metric, value, data='train'):
         assert isinstance(epoch, int)
         assert isinstance(metric, str)
+        if isinstance(data, tuple):
+            data = '_'.join(data)
         assert isinstance(data, str)
         assert isinstance(value, float) or isinstance(value, int)
         if metric not in self.results:

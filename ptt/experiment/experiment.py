@@ -18,6 +18,7 @@ import ptt.utils.pytorch.pytorch_load_restore as ptlr
 from ptt.visualization.plot_results import plot_results
 from ptt.experiment.data_splitting import split_dataset
 from ptt.paths import storage_path
+from ptt.data.data import Data
 
 class Experiment:
     """A bundle of experiment runs with the same configuration. """
@@ -53,14 +54,23 @@ class Experiment:
             lr.save_json(self.config, path=self.path, name='config')
             lr.save_json(self.review, path=self.path, name='review')
 
-    def set_data_splits(self, ds):
+    def set_data_splits(self, data):
         try:
             self.splits = lr.load_json(path=self.path, name='splits')
         except FileNotFoundError:
             print('Dividing dataset')
-            self.splits = split_dataset(ds, test_ratio=self.config['test_ratio'], 
-            val_ratio=self.config['val_ratio'], nr_repetitions=self.config['nr_runs'], 
-            cross_validation=self.config['cross_validation'])
+            # If the data consists of several datasets, then the splits are a
+            # dictionary with one more label, that of the dataset name.
+            if isinstance(data, Data):
+                self.splits = dict()
+                for ds_name, ds in data.datasets.items():
+                    self.splits[ds_name] = split_dataset(ds, test_ratio=self.config.get('test_ratio', 0.0), 
+                    val_ratio=self.config['val_ratio'], nr_repetitions=self.config['nr_runs'], 
+                    cross_validation=self.config['cross_validation'])
+            else:
+                self.splits = split_dataset(data, test_ratio=self.config.get('test_ratio', 0.0), 
+                    val_ratio=self.config['val_ratio'], nr_repetitions=self.config['nr_runs'], 
+                    cross_validation=self.config['cross_validation'])
             lr.save_json(self.splits, path=self.path, name='splits')
             print('\n')
 
