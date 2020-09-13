@@ -16,7 +16,8 @@ class Dataset:
         :param x_norm: normalization values for the input
         """
         self.name = name
-        self.instances = instances
+        # Sort instances in terms of name
+        self.instances = sorted(instances, key=lambda ex: ex.name)
         self.size = len(instances)
         self.classes = classes
         self.hold_out_ixs = hold_out_ixs

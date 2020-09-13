@@ -46,7 +46,6 @@ def plot_3d_img(img, save_path=None):
     else:
         plt.show()
 
-
 def img_to_numpy_array(x):
     if 'SimpleITK.SimpleITK.Image' in str(type(x)):
         x = sitk.GetArrayFromImage(x)
@@ -57,35 +56,20 @@ def img_to_numpy_array(x):
     # TODO: catch unsupported types
     return x
 
-def plot_3d_segmentation(img, segmentation, save_path=None):
-    """
-    :param img: SimpleITK image or numpy array
-    """
+def plot_3d_segmentation(img, segmentation, grid_size=(5,5), save_path=None, img_size=(512, 512), alpha=0.5):
     img = img_to_numpy_array(img)
     segmentation = img_to_numpy_array(segmentation)
-    # Ensure right dimensions
-    img = ensure_three_dimensions(img)
-    img = ensure_slices_first(img)
-    segmentation = ensure_three_dimensions(segmentation)
-    segmentation = ensure_slices_first(segmentation)
     assert img.shape == segmentation.shape
-    # Create grid
-    nr_slices = len(segmentation)
-    nr_cols=8
-    nr_rows=int(math.ceil(nr_slices/nr_cols))
-    plt.figure(figsize=(nr_cols*3,nr_rows*3))
-    plt.subplots_adjust(0,0,1,1,0.01,0.01)
-    for i in range(img.shape[0]):
-        # TODO: Background image ends up blue
-        plt.subplot(nr_rows,nr_cols,i+1)
-        plt.imshow(img[i], cmap='gray', interpolation='none'), plt.axis('off')
-        plt.subplot(nr_rows,nr_cols,i+1)
-        plt.imshow(segmentation[i], cmap='jet', interpolation='none', alpha=0.5), 
-        plt.axis('off')
-    if save_path:
-        plt.savefig(save_path)
-    else:
-        plt.show()
+    assert len(img.shape) == 4 and int(img.shape[0]) == 1
+    # Rotate axis to have (depth, 1, width, height) from (1, width, height, depth)
+    img = np.moveaxis(img, -1, 0)
+    segmentation = np.moveaxis(segmentation, -1, 0)
+    # Create 2D image list
+    imgs = []
+    for ix in range(len(img)):
+        imgs.append((img[ix], segmentation[ix]))
+    img_grid = get_img_grid(imgs, grid_size[0], grid_size[1])
+    create_x_y_grid(img_grid=img_grid, save_path=save_path, img_size=img_size, alpha=alpha)
 
 def plot_overlay_mask(img, mask, save_path=None, figsize=(20, 20)):
     """
