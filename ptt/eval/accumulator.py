@@ -11,6 +11,11 @@ class Accumulator:
         if keys is not None:
             self.init(keys)
 
+    def update(self, acc):
+        for key, value in acc.values.items():
+            if key not in self.values:
+                self.values[key] = value
+
     def init(self, keys):
         for key in keys:
             self.values[key] = []

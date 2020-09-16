@@ -52,7 +52,7 @@ def img_to_numpy_array(x):
     elif 'torchio.data.image.Image' in str(type(x)):
         x = x.tensor.numpy()
     elif 'torch.Tensor' in str(type(x)):
-        x = x.numpy()
+        x = x.cpu().numpy()
     # TODO: catch unsupported types
     return x
 
