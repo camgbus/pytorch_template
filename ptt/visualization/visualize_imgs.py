@@ -60,16 +60,14 @@ import math
 def plot_3d_subject_gt(subject):
     inputs = subject['x'].data
     targets = subject['y'].data
-    grid_side = int(math.ceil(math.sqrt(int(inputs.shape[-1]))))
-    plot_3d_segmentation(inputs, targets, grid_size=(grid_side, grid_side))
+    plot_3d_segmentation(inputs, targets)
 
 def plot_3d_subject_pred(subject, pred):
     inputs = subject['x'].data
     assert pred.shape == subject['y'].data.shape, "Prediction has the wrong size."
-    grid_side = int(math.ceil(math.sqrt(int(inputs.shape[-1]))))
-    plot_3d_segmentation(inputs, pred, grid_size=(grid_side, grid_side))
+    plot_3d_segmentation(inputs, pred)
 
-def plot_3d_segmentation(img, segmentation, grid_size=(5,5), save_path=None, img_size=(512, 512), alpha=0.5):
+def plot_3d_segmentation(img, segmentation, save_path=None, img_size=(512, 512), alpha=0.5):
     img = img_to_numpy_array(img)
     segmentation = img_to_numpy_array(segmentation)
     assert img.shape == segmentation.shape
@@ -81,7 +79,8 @@ def plot_3d_segmentation(img, segmentation, grid_size=(5,5), save_path=None, img
     imgs = []
     for ix in range(len(img)):
         imgs.append((img[ix], segmentation[ix]))
-    img_grid = get_img_grid(imgs, grid_size[0], grid_size[1])
+    grid_side = int(math.ceil(math.sqrt(len(imgs))))
+    img_grid = get_img_grid(imgs, grid_side, grid_side)
     create_x_y_grid(img_grid=img_grid, save_path=save_path, img_size=img_size, alpha=alpha)
 
 def plot_overlay_mask(img, mask, save_path=None, figsize=(20, 20)):
@@ -116,9 +115,10 @@ def plot_2d_img(img, save_path=None, figsize=(20, 20)):
     else:
         plt.show()
 
-def visualize_dataloader(dataloader, grid_size=(5, 5), save_path=None, img_size=(512, 512)):
-    imgs = get_imgs_from_dataloader(dataloader, grid_size[0]*grid_size[1])
-    img_grid = get_img_grid(imgs, grid_size[0], grid_size[1])
+def visualize_dataloader(dataloader, max_nr_imgs=100, save_path=None, img_size=(256, 256)):
+    imgs = get_imgs_from_dataloader(dataloader, max_nr_imgs)
+    grid_side = int(math.ceil(math.sqrt(len(imgs))))
+    img_grid = get_img_grid(imgs, grid_side, grid_side)
     create_img_grid(img_grid=img_grid, save_path=save_path, img_size=img_size)
 
 def get_imgs_from_dataloader(dataloader, nr_imgs):
@@ -295,9 +295,10 @@ def create_x_y_grid(img_grid = [[]], img_size = (512, 512), alpha=0.5,
     else:
         new_img.save(save_path)
 
-def visualize_dataloader_with_masks(dataloader, grid_size=(5,5), save_path=None, 
-    img_size=(512, 512), alpha=0.5):
-    imgs = get_x_y_from_dataloader(dataloader, grid_size[0]*grid_size[1])
-    img_grid = get_img_grid(imgs, grid_size[0], grid_size[1])
+def visualize_dataloader_with_masks(dataloader, max_nr_imgs=100, save_path=None, 
+    img_size=(256, 256), alpha=0.5):
+    imgs = get_x_y_from_dataloader(dataloader, max_nr_imgs)
+    grid_side = int(math.ceil(math.sqrt(len(imgs))))
+    img_grid = get_img_grid(imgs, grid_side, grid_side)
     create_x_y_grid(img_grid=img_grid, save_path=save_path, img_size=img_size, alpha=alpha)
     
