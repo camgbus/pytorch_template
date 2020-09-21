@@ -56,6 +56,19 @@ def img_to_numpy_array(x):
     # TODO: catch unsupported types
     return x
 
+import math
+def plot_3d_subject_gt(subject):
+    inputs = subject['x'].data
+    targets = subject['y'].data
+    grid_side = int(math.ceil(math.sqrt(int(inputs.shape[-1]))))
+    plot_3d_segmentation(inputs, targets, grid_size=(grid_side, grid_side))
+
+def plot_3d_subject_pred(subject, pred):
+    inputs = subject['x'].data
+    assert pred.shape == subject['y'].data.shape, "Prediction has the wrong size."
+    grid_side = int(math.ceil(math.sqrt(int(inputs.shape[-1]))))
+    plot_3d_segmentation(inputs, pred, grid_size=(grid_side, grid_side))
+
 def plot_3d_segmentation(img, segmentation, grid_size=(5,5), save_path=None, img_size=(512, 512), alpha=0.5):
     img = img_to_numpy_array(img)
     segmentation = img_to_numpy_array(segmentation)
@@ -222,11 +235,11 @@ def stretch_mask_range(mask):
         mask = mask.astype(np.uint8)
 
 
-segmask_colors = {1: {'red': 206, 'green': 24, 'blue': 30},
-    2: {'red': 64, 'green': 201, 'blue': 204},
-    3: {'red': 250, 'green': 245, 'blue': 56},
-    4: {'red': 193, 'green': 69, 'blue': 172},
-    5: {'red': 54, 'green': 71, 'blue': 217}
+segmask_colors = {1: {'red': 206, 'green': 24, 'blue': 30}, # Red
+    2: {'red': 64, 'green': 201, 'blue': 204}, # Mint
+    3: {'red': 250, 'green': 245, 'blue': 56}, # Yellow
+    4: {'red': 193, 'green': 69, 'blue': 172}, # Purple
+    5: {'red': 54, 'green': 71, 'blue': 217} # Blue
     }
 
 def color_mask(mask):
