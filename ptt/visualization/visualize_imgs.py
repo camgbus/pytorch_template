@@ -9,54 +9,23 @@ import matplotlib.pyplot as plt
 import SimpleITK as sitk
 import math
 
-def ensure_three_dimensions(img):
-    if len(img.shape) == 4:
-        assert img.shape[0] == 1, "More than one image in batch."
-    return img[0]
-
-def ensure_slices_first(img):
-    assert len(img.shape) == 3, "Image should have three dimensions."
-    if np.argmin(img.shape) == 2:
-        img = np.moveaxis(img, 2, 0)
-    assert np.argmin(img.shape) == 0
-    return img
-
-def plot_3d_img(img, save_path=None):
-    """
-    :param img: SimpleITK image or numpy array
-    """
-    if 'SimpleITK.SimpleITK.Image' in str(type(img)):
-        img = sitk.GetArrayFromImage(img)
-    elif 'torchio.data.image.Image' in str(type(img)):
-        img = img.tensor.numpy()
-    # Ensure right dimensions
-    img = ensure_three_dimensions(img)
-    img = ensure_slices_first(img)
-    # Create grid
-    nr_slices = len(img)
-    nr_cols=8
-    nr_rows=int(math.ceil(nr_slices/nr_cols))
-    plt.figure(figsize=(nr_cols*3,nr_rows*3))
-    plt.gray()
-    plt.subplots_adjust(0,0,1,1,0.01,0.01)
-    for i in range(img.shape[0]):
-        plt.subplot(nr_rows,nr_cols,i+1), plt.imshow(img[i]), plt.axis('off')
-    if save_path:
-        plt.savefig(save_path)
-    else:
-        plt.show()
-
 def img_to_numpy_array(x):
-    if 'SimpleITK.SimpleITK.Image' in str(type(x)):
-        x = sitk.GetArrayFromImage(x)
-    elif 'torchio.data.image.Image' in str(type(x)):
-        x = x.tensor.numpy()
-    elif 'torch.Tensor' in str(type(x)):
-        x = x.cpu().numpy()
-    # TODO: catch unsupported types
-    return x
+    type_str = str(type(x))
+    if 'SimpleITK.SimpleITK.Image' in type_str:
+        return sitk.GetArrayFromImage(x)
+    elif 'torchio.data.image.Image' in type_str:
+        return x.tensor.numpy()
+    elif 'torch.Tensor' in type_str:
+        return x.detach().cpu().numpy()
+    elif 'numpy.ndarray' in type_str:
+        return x
+    else:
+        raise NotImplementedError
 
-import math
+def normalize_range(img_array, max_value=255.):
+    img_array /= (img_array.max()/max_value)
+    return img_array.astype(np.uint8)
+    
 def plot_3d_subject_gt(subject):
     inputs = subject['x'].data
     targets = subject['y'].data
@@ -87,7 +56,7 @@ def plot_overlay_mask(img, mask, save_path=None, figsize=(20, 20)):
     """
     Compare two 2d imgs, one on top of the other.
     """
-    if 'torch' in str(type(img)):
+    if 'torch.Tensor' in str(type(img)):
         img, mask = img.cpu().detach().numpy(), mask.cpu().detach().numpy()
         while len(img.shape) > 2:
             img, mask = img[0], mask[0]
@@ -101,6 +70,8 @@ def plot_overlay_mask(img, mask, save_path=None, figsize=(20, 20)):
         plt.show()
 
 def plot_2d_img(img, save_path=None, figsize=(20, 20)):
+    if 'torch.Tensor' in  str(type(img)):
+        img = img.cpu().detach().numpy()
     while img.shape[0] == 1:
         img = img[0]
     if len(img.shape) == 3:
@@ -155,11 +126,11 @@ def create_img_grid(img_grid = [[]], img_size = (512, 512),
         for img in row:
             if img.shape[0]==1: # Grayscale images
                 img = img[0]
-                img = Image.fromarray(img).resize(img_size)
             else: # Colored images
                 if np.argpartition(img.shape, 1)[0] == 0: # If channels first
                     img = np.moveaxis(img, 0, 2) 
-                img = Image.fromarray((img * 255).astype(np.uint8)).resize(img_size).convert('RGB')
+            img = normalize_range(img)
+            img = Image.fromarray(img).resize(img_size).convert('RGBA')
             new_img.paste(img, (left, top))
             left += img_size[0] + margin[0]
         top += img_size[1] + margin[1]
@@ -217,7 +188,6 @@ def get_x_y_from_dataloader(dataloader, nr_imgs):
             break  
     return imgs
 
-
 def overlay_images(base, overlay, alpha=0.5):
     """Add transparency to mask, and make composition of image overlayed by 
     transparent mask.
@@ -233,7 +203,6 @@ def stretch_mask_range(mask):
     if mask.max() != 0:
         mask *= (255.0/mask.max())
         mask = mask.astype(np.uint8)
-
 
 segmask_colors = {1: {'red': 206, 'green': 24, 'blue': 30}, # Red
     2: {'red': 64, 'green': 201, 'blue': 204}, # Mint
@@ -270,6 +239,8 @@ def create_x_y_grid(img_grid = [[]], img_size = (512, 512), alpha=0.5,
                 img, mask = img_mask_pair
                 if img.shape[0]==1: # Grayscale images
                     img = img[0]
+                    # Normalize image values between 0 and 255
+                    img = normalize_range(img)
                     img = Image.fromarray(img).resize(img_size).convert('RGBA')
                     # Stretch the mask values between 0 and 255
                     mask = mask[0]
@@ -281,8 +252,9 @@ def create_x_y_grid(img_grid = [[]], img_size = (512, 512), alpha=0.5,
                     if np.argpartition(img.shape, 1)[0] == 0: # If channels first
                         img = np.moveaxis(img, 0, 2) 
                         mask = np.moveaxis(mask, 0, 2) 
-                    img = Image.fromarray((img * 255).astype(np.uint8)).resize(img_size).convert('RGBA')
-                    mask = Image.fromarray((mask * 255).astype(np.uint8)).resize(img_size).convert('RGBA')
+                    img = normalize_range(img)
+                    img = Image.fromarray((img).astype(np.uint8)).resize(img_size).convert('RGBA')
+                    mask = Image.fromarray((mask).astype(np.uint8)).resize(img_size).convert('RGBA')
                 # Overlay images
                 x_y_img = overlay_images(img, mask, alpha=alpha)
                 # Paste into original image
